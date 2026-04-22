@@ -1,3 +1,5 @@
+import fetch from "node-fetch";
+
 export default async function handler(req, res) {
   try {
     const pixel = "594259826536475";
@@ -22,12 +24,12 @@ export default async function handler(req, res) {
       }
     );
 
-    // IMPORTANT: do NOT parse JSON (this is where crashes happen)
-    const text = await response.text();
+    const data = await response.json();
 
-    return res.status(200).send(text);
+    res.status(200).json(data);
 
-  } catch (error) {
-    return res.status(500).send("ERROR: " + error.message);
+  } catch (err) {
+    console.error("ERROR:", err);
+    res.status(500).json({ error: err.message });
   }
 }
