@@ -1,31 +1,34 @@
 export default async function handler(req, res) {
   try {
-    const token = process.env.META_ACCESS_TOKEN;
-    const pixel = process.env.PIXEL_ID;
+    const pixel = "YOUR_PIXEL_ID";
+    const token = "PASTE_YOUR_TOKEN_HERE";
 
-    console.log("TOKEN:", token ? "exists" : "missing");
-    console.log("PIXEL:", pixel);
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/${pixel}/events?access_token=${token}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          data: [
+            {
+              event_name: "Purchase",
+              event_time: Math.floor(Date.now() / 1000),
+              action_source: "website"
+            }
+          ]
+        })
+      }
+    );
 
-    await fetch(`https://graph.facebook.com/v18.0/${pixel}/events?access_token=${token}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        data: [
-          {
-            event_name: "Purchase",
-            event_time: Math.floor(Date.now() / 1000),
-            action_source: "website"
-          }
-        ]
-      })
-    });
+    const data = await response.json();
+    console.log("META RESPONSE:", data);
 
-    res.status(200).json({ ok: true });
+    res.status(200).json(data);
+
   } catch (err) {
     console.error(err);
-    res.status(200).json({ ok: true });
+    res.status(200).json({ error: "fail" });
   }
 }
- 
