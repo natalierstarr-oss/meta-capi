@@ -15,7 +15,8 @@ const response = await fetch(
         {
           event_name: "Purchase",
           event_time: Math.floor(Date.now() / 1000),
-          action_source: "website"
+          action_source: "website",
+          user_data: {}
         }
       ]
     })
