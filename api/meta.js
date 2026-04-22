@@ -1,24 +1,37 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     const pixel = "594259826536475";
-    const token = "EAAcXbP1YQ78BRU5E8xSkSrE3ZC8G6T2IbkXoC0Bn6ZCXyVDykZCwBZAloewYyBiUAVeR0SYuuTLtfCjFtLwmG7Wq68Tbxpm3HHglw7ZCJLF7TuIJ7t4tkVwQ0th8rNdVBbZBHhZBFesgUTxAnZCZAGTZCfUYo4r5zGujmjWrd9z6v4cINBDVWIG0uM2i3i07whOwZDZD";
-const response = await fetch(
-  `https://graph.facebook.com/v18.0/${pixel}/events`,
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-    },
-    body: JSON.stringify({
-      data: [
-        {
-          event_name: "Purchase",
-          event_time: Math.floor(Date.now() / 1000),
-          action_source: "website",
-          user_data: {}
-        }
-      ]
-    })
+    const token = "EAAcXbP1YQ78BRdhyIycn0MSAN4Tcjx0ZA7prmWsjounsT4ES1fWW4Fd7f9mer51R2V1RwZAxrpdvyIEschRYecYSxy9uOrYH1UzWS50BN79lvbl3qugojwMJVvZCj3Tqzxhz2pcP4Nabm5A0XhhxhwCfqiCKEz8PtfrbiPWJMMnWSEJzg4ZCD1kfzFvIZBQZDZD";
+
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/${pixel}/events`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          data: [
+            {
+              event_name: "Purchase",
+              event_time: Math.floor(Date.now() / 1000),
+              action_source: "website"
+            }
+          ],
+          access_token: token
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    return res.status(200).json(data);
+
+  } catch (err) {
+    console.error("ERROR:", err);
+
+    return res.status(500).json({
+      error: err.message
+    });
   }
-);
+};
