@@ -1,10 +1,10 @@
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   try {
     const pixel = "594259826536475";
     const token = "EAAcXbP1YQ78BRdhyIycn0MSAN4Tcjx0ZA7prmWsjounsT4ES1fWW4Fd7f9mer51R2V1RwZAxrpdvyIEschRYecYSxy9uOrYH1UzWS50BN79lvbl3qugojwMJVvZCj3Tqzxhz2pcP4Nabm5A0XhhxhwCfqiCKEz8PtfrbiPWJMMnWSEJzg4ZCD1kfzFvIZBQZDZD";
 
     const response = await fetch(
-      `https://graph.facebook.com/v18.0/${pixel}/events`,
+      `https://graph.facebook.com/v18.0/${pixel}/events?access_token=${token}`,
       {
         method: "POST",
         headers: {
@@ -17,8 +17,7 @@ module.exports = async function handler(req, res) {
               event_time: Math.floor(Date.now() / 1000),
               action_source: "website"
             }
-          ],
-          access_token: token
+          ]
         })
       }
     );
@@ -29,9 +28,6 @@ module.exports = async function handler(req, res) {
 
   } catch (err) {
     console.error("ERROR:", err);
-
-    return res.status(500).json({
-      error: err.message
-    });
+    return res.status(500).json({ error: err.message });
   }
-};
+}
