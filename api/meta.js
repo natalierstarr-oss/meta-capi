@@ -7,32 +7,23 @@ export default async function handler(req, res) {
     const pixel = "594259826536475";
     const token = "EAAcXbP1YQ78BRdxlO6wGcHuridZBLvraAeD5NwkI8BopZCaiflpFoWH8FwZAOZBZBH43AfecEMZAzGWM3td9tZBh18ZBlWEXUAgfmsMDmlAzoOM7bOPEo8bRviv6jdZB35jExPu61lUhsGkcPWqpxPOWiDqHnrzLqc9q3Lq7gC4b6bPkoNMC0bDmDJqeXdiUY4wZDZD";
 
-    const crypto = require("crypto");
-
     const isBooking = !!body?.booking;
 
     console.log("IS BOOKING:", isBooking);
 
-    // EMAIL
+    // EMAIL (safe, no crypto for now)
     const email = isBooking
       ? body?.booking?.customer?.email || ""
       : "";
-
-    const hashedEmail = email
-      ? crypto
-          .createHash("sha256")
-          .update(email.trim().toLowerCase())
-          .digest("hex")
-      : undefined;
 
     // VALUE
     const value = isBooking
       ? parseFloat(body?.booking?.order?.total) || 0
       : 0;
 
-    // FBCLID (THIS IS THE KEY FIX)
+    // FBCLID (THIS is what we care about)
     let fbclid =
-      body?.fbclid || // from Squarespace script
+      body?.fbclid ||
       body?.booking?.fields?.fbclid ||
       body?.booking?.meta?.fbclid ||
       null;
@@ -64,7 +55,8 @@ export default async function handler(req, res) {
               event_time: Math.floor(Date.now() / 1000),
               action_source: "website",
               user_data: {
-                em: hashedEmail,
+                // removed hashing for now to avoid crash
+                em: email || undefined,
                 fbc: fbc
               },
               custom_data: isBooking
