@@ -1,13 +1,11 @@
-export default async function handler(req) {
+export default async function handler(req, res) {
   try {
-    const body = await req.json();
+    const body = req.body;
 
-    console.log("BODY:", body);
+    console.log("REQ BODY:", body);
 
     const pixel = "594259826536475";
     const token = "EAAcXbP1YQ78BRdxlO6wGcHuridZBLvraAeD5NwkI8BopZCaiflpFoWH8FwZAOZBZBH43AfecEMZAzGWM3td9tZBh18ZBlWEXUAgfmsMDmlAzoOM7bOPEo8bRviv6jdZB35jExPu61lUhsGkcPWqpxPOWiDqHnrzLqc9q3Lq7gC4b6bPkoNMC0bDmDJqeXdiUY4wZDZD";
-
-    const isBooking = !!body?.booking;
 
     let fbclid = body?.fbclid || null;
 
@@ -30,7 +28,7 @@ export default async function handler(req) {
         body: JSON.stringify({
           data: [
             {
-              event_name: isBooking ? "Purchase" : "PageView",
+              event_name: "PageView",
               event_time: Math.floor(Date.now() / 1000),
               action_source: "website",
               user_data: {
@@ -42,10 +40,10 @@ export default async function handler(req) {
       }
     );
 
-    return new Response("ok", { status: 200 });
+    res.status(200).send("ok");
 
   } catch (err) {
     console.error("ERROR:", err);
-    return new Response("error", { status: 500 });
+    res.status(500).send("error");
   }
 }
