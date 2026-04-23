@@ -1,14 +1,22 @@
 export default async function handler(req, res) {
+  // ✅ CORS FIX (this is the missing piece)
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   try {
-    const body = req.body;
+    const body = req.body || {};
 
     console.log("REQ BODY:", body);
 
     const pixel = "594259826536475";
     const token = "EAAcXbP1YQ78BRdxlO6wGcHuridZBLvraAeD5NwkI8BopZCaiflpFoWH8FwZAOZBZBH43AfecEMZAzGWM3td9tZBh18ZBlWEXUAgfmsMDmlAzoOM7bOPEo8bRviv6jdZB35jExPu61lUhsGkcPWqpxPOWiDqHnrzLqc9q3Lq7gC4b6bPkoNMC0bDmDJqeXdiUY4wZDZD";
 
-    let fbclid = body?.fbclid || null;
-
+    const fbclid = body.fbclid || null;
     console.log("FBCLID:", fbclid);
 
     let fbc = null;
