@@ -5,17 +5,18 @@ export default async function handler(req, res) {
     console.log("REQ BODY:", JSON.stringify(body, null, 2));
 
     const pixel = "594259826536475";
-    const token = "EAAcXbP1YQ78BRdxlO6wGcHuridZBLvraAeD5NwkI8BopZCaiflpFoWH8FwZAOZBZBH43AfecEMZAzGWM3td9tZBh18ZBlWEXUAgfmsMDmlAzoOM7bOPEo8bRviv6jdZB35jExPu61lUhsGkcPWqpxPOWiDqHnrzLqc9q3Lq7gC4b6bPkoNMC0bDmDJqeXdiUY4wZDZD"; // 👈 keep your real token
-
-    // -----------------------------
-    // EMAIL (for match quality)
-    // -----------------------------
-    const email =
-      body?.booking?.customer?.email ||
-      body?.customer?.email ||
-      "";
+    const token = "EAAcXbP1YQ78BRdxlO6wGcHuridZBLvraAeD5NwkI8BopZCaiflpFoWH8FwZAOZBZBH43AfecEMZAzGWM3td9tZBh18ZBlWEXUAgfmsMDmlAzoOM7bOPEo8bRviv6jdZB35jExPu61lUhsGkcPWqpxPOWiDqHnrzLqc9q3Lq7gC4b6bPkoNMC0bDmDJqeXdiUY4wZDZD";
 
     const crypto = require("crypto");
+
+    const isBooking = !!body?.booking;
+
+    console.log("IS BOOKING:", isBooking);
+
+    // EMAIL
+    const email = isBooking
+      ? body?.booking?.customer?.email || ""
+      : "";
 
     const hashedEmail = email
       ? crypto
@@ -24,42 +25,22 @@ export default async function handler(req, res) {
           .digest("hex")
       : undefined;
 
-    // -----------------------------
     // VALUE
-    // -----------------------------
-    const value =
-      parseFloat(body?.booking?.order?.total) ||
-      body?.total ||
-      0;
+    const value = isBooking
+      ? parseFloat(body?.booking?.order?.total) || 0
+      : 0;
 
-    // -----------------------------
-    // FBCLID EXTRACTION
-    // -----------------------------
-
-    // 1. Try direct field (Checkfront custom field)
+    // FBCLID (THIS IS THE KEY FIX)
     let fbclid =
+      body?.fbclid || // from Squarespace script
       body?.booking?.fields?.fbclid ||
       body?.booking?.meta?.fbclid ||
       null;
 
-    // If it's empty object, ignore it
     if (typeof fbclid === "object") {
       fbclid = null;
     }
 
-    // 2. Fallback: scan entire payload
-    if (!fbclid) {
-      const raw = JSON.stringify(body);
-
-      const match1 = raw.match(/fbclid=([^&"]+)/);
-      const match2 = raw.match(/"fbclid":"([^"]+)"/);
-
-      fbclid = match1?.[1] || match2?.[1] || null;
-    }
-
-    // -----------------------------
-    // FORMAT FBC
-    // -----------------------------
     const fbc = fbclid
       ? `fb.1.${Math.floor(Date.now() / 1000)}.${fbclid}`
       : undefined;
@@ -67,9 +48,8 @@ export default async function handler(req, res) {
     console.log("FBCLID:", fbclid);
     console.log("FBC:", fbc);
 
-    // -----------------------------
-    // SEND TO META
-    // -----------------------------
+    const eventName = isBooking ? "Purchase" : "PageView";
+
     await fetch(
       `https://graph.facebook.com/v18.0/${pixel}/events?access_token=${token}`,
       {
@@ -80,17 +60,19 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           data: [
             {
-              event_name: "Purchase",
+              event_name: eventName,
               event_time: Math.floor(Date.now() / 1000),
               action_source: "website",
               user_data: {
                 em: hashedEmail,
                 fbc: fbc
               },
-              custom_data: {
-                value: value,
-                currency: "USD"
-              }
+              custom_data: isBooking
+                ? {
+                    value: value,
+                    currency: "USD"
+                  }
+                : {}
             }
           ]
         })
