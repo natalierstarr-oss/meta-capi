@@ -20,6 +20,17 @@ export default async function handler(req, res) {
     const customer = booking.customer || {};
     const order = booking.order || {};
 
+    const booking = body.booking || {};
+
+// ✅ ADD THIS FILTER HERE
+if (booking.tracking_id !== "website") {
+  console.log("Skipping non-website booking:", booking.tracking_id);
+  return res.status(200).send("skipped");
+}
+
+const customer = booking.customer || {};
+const order = booking.order || {};
+    
     const email = customer.email || null;
     const value = parseFloat(order.total || 0);
 
