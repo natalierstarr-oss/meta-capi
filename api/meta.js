@@ -9,35 +9,40 @@ export default async function handler(req, res) {
 
   try {
     const body = req.body || {};
-
     console.log("REQ BODY:", body);
 
     const pixel = "594259826536475";
     const token = "EAAcXbP1YQ78BRdxlO6wGcHuridZBLvraAeD5NwkI8BopZCaiflpFoWH8FwZAOZBZBH43AfecEMZAzGWM3td9tZBh18ZBlWEXUAgfmsMDmlAzoOM7bOPEo8bRviv6jdZB35jExPu61lUhsGkcPWqpxPOWiDqHnrzLqc9q3Lq7gC4b6bPkoNMC0bDmDJqeXdiUY4wZDZD";
 
-    // ✅ CHECKFRONT DATA (this is the real fix)
+    // ✅ SAFE BOOKING EXTRACTION
     const booking = body.booking || {};
+
+    if (!booking || typeof booking !== "object") {
+      console.log("Invalid booking payload");
+      return res.status(200).send("no booking");
+    }
+
+    // ✅ SAFE TRACKING ID CHECK
+    const trackingId =
+      booking.tracking_id ||
+      booking.meta?.tracking_id ||
+      null;
+
+    if (trackingId !== "website") {
+      console.log("Skipping non-website booking:", trackingId);
+      return res.status(200).send("skipped");
+    }
+
     const customer = booking.customer || {};
     const order = booking.order || {};
 
-    const booking = body.booking || {};
-
-// ✅ ADD THIS FILTER HERE
-if (booking.tracking_id !== "website") {
-  console.log("Skipping non-website booking:", booking.tracking_id);
-  return res.status(200).send("skipped");
-}
-
-const customer = booking.customer || {};
-const order = booking.order || {};
-    
     const email = customer.email || null;
-    const value = parseFloat(order.total || 0);
+    const value = Number(order?.total) || 0;
 
     console.log("EMAIL:", email);
     console.log("VALUE:", value);
 
-    // hash email (required by Meta)
+    // ✅ HASH EMAIL (Meta requirement)
     let hashedEmail = null;
     if (email) {
       const crypto = await import("crypto");
@@ -47,6 +52,7 @@ const order = booking.order || {};
         .digest("hex");
     }
 
+    // ✅ SEND TO META
     await fetch(
       `https://graph.facebook.com/v18.0/${pixel}/events?access_token=${token}`,
       {
@@ -73,10 +79,12 @@ const order = booking.order || {};
       }
     );
 
-    res.status(200).send("ok");
+    return res.status(200).send("ok");
 
   } catch (err) {
     console.error("ERROR:", err);
-    res.status(500).send("error");
+
+    // ✅ NEVER let webhook fail
+    return res.status(200).send("error handled");
   }
 }
