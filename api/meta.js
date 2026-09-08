@@ -20,11 +20,12 @@ export default async function handler(req, res) {
     const body = req.body || {};
     console.log("REQ BODY:", body);
 
-    const booking = body.booking || {};
+    const booking = body.booking;
 
-    if (!booking || typeof booking !== "object") {
-      console.log("Invalid booking payload");
-      return safeRespond("no booking");
+if (!booking || typeof booking !== "object") {
+  console.log("No booking object in request — likely browser traffic");
+  return safeRespond("no booking");
+}
     }
 
     // ✅ TRACKING ID FILTER (website only)
