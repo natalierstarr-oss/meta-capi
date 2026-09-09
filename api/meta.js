@@ -107,7 +107,7 @@ if (!booking || typeof booking !== "object") {
             }
           ]
         })
-      }
+      })
     ).catch(err => console.error("Meta error:", err));
 
     return safeRespond("ok");
