@@ -26,7 +26,7 @@ if (!booking || typeof booking !== "object") {
   console.log("No booking object in request — likely browser traffic");
   return safeRespond("no booking");
 }
-  }
+  
     // ✅ TRACKING ID FILTER (website only)
     const trackingId =
       booking.tracking_id ||
